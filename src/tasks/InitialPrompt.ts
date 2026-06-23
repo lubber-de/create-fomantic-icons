@@ -11,6 +11,8 @@ import Logger from '../util/Logger.js';
 
 // icon sets
 import IconSets from '../static/icon_sets.json' with { type: 'json' };
+import * as fse from "fs-extra";
+import {tmpdir} from "os";
 
 export interface IconSet {
   name: string;
@@ -164,6 +166,73 @@ export function selectIconSetVersion(iconSet: IconSet, accessToken?: string): Pr
   });
 }
 
+export function selectIconSetVersionFromLocal(iconSet?: IconSet, accessToken?: string): Promise<Asset> {
+  Logger.log();
+
+  return new Promise((resolve) => {
+    const defaultPath = resolvePath(tmpdir(), 'fui-icon-script');
+    qoa
+      .input({
+        type: 'input',
+        query: `Which directory contains your local zip files? [${defaultPath}]`,
+        handle: 'localDirectory',
+      })
+      .then(({ localDirectory }: PromptAnswers) => {
+        fse.pathExists(localDirectory)
+          .then((localDirectoryExists) => {
+            if (localDirectoryExists) {
+              const versions: Asset[] = [];
+
+              data
+                .filter((release: GitHubRelease) => release.assets
+                  .some((asset: GitHubReleaseAsset) => {
+                    const regex = new RegExp(iconSet.assetMatch);
+                    return regex.test(asset.name);
+                  }))
+                .forEach((release: GitHubRelease) => {
+                  const asset: GitHubReleaseAsset = release.assets
+                    .filter((a) => {
+                      const regex = new RegExp(iconSet.assetMatch);
+                      return regex.test(a.name);
+                    })[0];
+                  if (versions.length >= 10) {
+                    return;
+                  }
+                  versions.push({
+                    name: asset.name,
+                    id: asset.id,
+                    version: release.tag_name,
+                    downloadUrl: asset.browser_download_url,
+                  });
+                });
+
+              qoa
+                .interactive({
+                  handle: 'setVersion',
+                  query: `Which version of ${iconSet.name} should we use?`,
+                  menu: versions.map((v) => v.version),
+                })
+                .then(({ setVersion }: PromptAnswers) => {
+                  // @ts-ignore
+                  resolve(versions.find((v) => v.version === setVersion));
+                })
+                .catch((err: Error) => {
+                  Logger.error(err);
+                  process.exit(1);
+                });
+            } else {
+              Logger.error(new Error('Failed to fetch releases from git repository.'));
+              process.exit(1);
+            }
+          });
+      })
+      .catch((err: Error) => {
+        Logger.error(err);
+        process.exit(1);
+      });
+  });
+}
+
 export function askForDistPath(): Promise<string> {
   return new Promise((resolve) => {
     Logger.log();
@@ -209,8 +278,9 @@ export default function run(): Promise<PromptResults> {
                 });
             });
         };
-
-        if (iconSet.requiresAuth) {
+        if (iconSet.repo === 'local') {
+          selectIconSetVersionFromLocal();
+        } else if (iconSet.requiresAuth) {
           Logger.log();
           Logger.note('The icon set you selected requires authentication to download.');
           Logger.note('Generate a personal access token here: https://github.com/settings/tokens');
