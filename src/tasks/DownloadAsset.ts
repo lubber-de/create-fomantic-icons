@@ -151,6 +151,15 @@ export default function run(results: PromptResults): Promise<PathResults> {
     const assetDirectoryPath = resolvePath(tmpdir(), 'fui-icon-script', results.asset.name
       .split('.').slice(0, -1).join('.'));
 
+    if (results.iconSet.repo === 'local') {
+      console.log('local!');
+      Logger.debug('LOCAL onLY');
+      resolve({
+        assetFilePath,
+        assetDirectoryPath,
+      });
+    }
+
     fse.pathExists(assetFilePath)
       .then((assetExists) => {
         if (assetExists) {
