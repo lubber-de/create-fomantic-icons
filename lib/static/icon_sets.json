@@ -12,10 +12,22 @@
         ]
     },
     {
-        "name": "FontAwesome 6+ Free",
+        "name": "FontAwesome 6 Free",
         "repo": "FortAwesome/Font-Awesome",
         "requiresAuth": false,
-        "assetMatch": "fontawesome-free-(?:[6789]|\\d{2})\\.\\d+\\.\\d+-web\\.zip",
+        "assetMatch": "fontawesome-free-6\\.\\d+\\.\\d+\\.\\d+-web\\.zip",
+        "parser": "FontAwesome",
+        "types": [
+            "solid",
+            "outline",
+            "brand"
+        ]
+    },
+    {
+        "name": "FontAwesome 7+ Free",
+        "repo": "FortAwesome/Font-Awesome",
+        "requiresAuth": false,
+        "assetMatch": "fontawesome-free-(?:[789]|\\d{2})\\.\\d+\\.\\d+-web\\.zip",
         "parser": "FontAwesome",
         "types": [
             "solid",
@@ -28,6 +40,20 @@
         "repo": "FortAwesome/Font-Awesome-Pro",
         "requiresAuth": true,
         "assetMatch": "fontawesome-pro-\\d+\\.\\d+\\.\\d+-web\\.zip",
+        "parser": "FontAwesome",
+        "types": [
+            "solid",
+            "outline",
+            "light",
+            "brand",
+            "duotone"
+        ]
+    },
+    {
+        "name": "FontAwesome Local Files",
+        "repo": "local",
+        "requiresAuth": false,
+        "assetMatch": "fontawesome-(?:pro-|free-)*(\\d+\\.\\d+\\.\\d+)(?:-.*)*\\.zip",
         "parser": "FontAwesome",
         "types": [
             "solid",
